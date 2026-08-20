@@ -1,27 +1,23 @@
 from flask import Flask, jsonify
-from config import Config
+from flask_cors import CORS
+from config import config_dict
+from app.database import init_db
 
-# Fabrika fonksiyonu: Tüm parçaları birleştirir
-def create_app():
+def create_app(config_name='default'):
     app = Flask(__name__)
-    app.config.from_object(Config)
+    app.config.from_object(config_dict[config_name])
+    CORS(app)
 
-    # CORS aç (Farklı sitelerden gelen isteklere izin ver)
-    @app.after_request
-    def cors_ayarlari(response):
-        response.headers.add('Access-Control-Allow-Origin', '*')
-        response.headers.add('Access-Control-Allow-Headers', 'Content-Type,Authorization')
-        response.headers.add('Access-Control-Allow-Methods', 'GET,POST,OPTIONS')
-        return response
+    with app.app_context():
+        init_db(app)
 
-    # /health uç noktası (Sunucu canlılık kontrolü)
-    @app.route('/health')
-    def health():
-        return jsonify({'durum': 'aktif', 'mesaj': 'LQM Backend calisiyor'})
-
-    # Blueprint'leri (rotaları) kaydet
-    from .routes import pages, api
+    # Импортируем блюпринты здесь, чтобы не было циклического импорта:
+    from app.routes import pages, api
     app.register_blueprint(pages)
     app.register_blueprint(api)
+
+    @app.route('/health')
+    def health():
+        return jsonify({'durum': 'aktif', 'servis': 'SmartLead AI'}), 200
 
     return app
