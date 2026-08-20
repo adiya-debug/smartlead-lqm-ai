@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <title>LQM Kozmetik - Lokum Dokulu Parlaklık</title>
+    <style>
+        body {
+            font-family: 'Helvetica Neue', sans-serif;
+            margin: 0; padding: 0;
+            background: linear-gradient(135deg, #ffd1dc 0%, #ffdfeb 100%);
+            min-height: 100vh;
+            color: #333;
+        }
+        /* Glassmorphism efekti (Buzlu Cam) */
+        .glass-panel {
+            background: rgba(255, 255, 255, 0.4);
+            backdrop-filter: blur(10px);
+            border-radius: 15px;
+            border: 1px solid rgba(255, 255, 255, 0.5);
+            padding: 20px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+        }
+        /* Z-Pattern Düzeni */
+        .header { padding: 20px 40px; }
+        .header h1 { color: #d81b60; margin: 0; }
+        .container {
+            display: flex; justify-content: space-around; flex-wrap: wrap; padding: 20px;
+        }
+        .chat-section, .lead-section { width: 45%; min-width: 300px; margin-bottom: 20px; }
+        
+        #chat-box { height: 250px; overflow-y: auto; background: white; padding: 10px; border-radius: 10px; margin-bottom: 10px; }
+        input, button { padding: 10px; border-radius: 8px; border: 1px solid #ccc; width: 100%; box-sizing: border-box; margin-bottom: 10px;}
+        button { background: #d81b60; color: white; border: none; cursor: pointer; font-weight: bold; }
+        button:hover { background: #ad144b; }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>LQM Kozmetik</h1>
+        <p>Geleneksel tatlar, modern parlaklık. Asistanımızla konuşun!</p>
+    </div>
+
+    <div class="container">
+        <!-- Sohbet Alanı (Sol Alt) -->
+        <div class="glass-panel chat-section">
+            <h3>Akıllı Asistan</h3>
+            <div id="chat-box"></div>
+            <input type="text" id="mesaj-girdisi" placeholder="Bize bir şey sorun (Örn: Hangi renk bana uyar?)">
+            <button onclick="mesajGonder()">Sor</button>
+        </div>
+
+        <!-- Lead Formu (Sağ Alt) -->
+        <div class="glass-panel lead-section">
+            <h3>Özel İndirim ve Bilgi Al</h3>
+            <p>Sana özel lokum aromalı gloss kampanyaları için iletişim bilgilerini bırak:</p>
+            <input type="text" id="isim" placeholder="Adınız Soyadınız">
+            <input type="text" id="telefon" placeholder="Telefon Numaranız">
+            <button onclick="leadKaydet()">Kaydet</button>
+        </div>
+    </div>
+
+    <script>
+        // API'ye mesaj gönderme
+        async function mesajGonder() {
+            const mesaj = document.getElementById('mesaj-girdisi').value;
+            if (!mesaj) return;
+            
+            const chatBox = document.getElementById('chat-box');
+            chatBox.innerHTML += `<p><b>Siz:</b> ${mesaj}</p>`;
+            document.getElementById('mesaj-girdisi').value = '';
+
+            const response = await fetch('/api/sohbet', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ mesaj: mesaj })
+            });
+            const data = await response.json();
+            if(data.basari) {
+                chatBox.innerHTML += `<p><b>LQM:</b> ${data.cevap}</p>`;
+            } else {
+                chatBox.innerHTML += `<p style="color:red;">Hata oluştu.</p>`;
+            }
+        }
+
+        // API'ye müşteri adayı (lead) gönderme
+        async function leadKaydet() {
+            const isim = document.getElementById('isim').value;
+            const telefon = document.getElementById('telefon').value;
+            
+            if(!isim || !telefon) {
+                alert("Lütfen isim ve telefon girin!");
+                return;
+            }
+
+            const response = await fetch('/api/leads', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ isim: isim, telefon: telefon })
+            });
+            const data = await response.json();
+            if(data.basari) {
+                alert("Teşekkürler! LQM ailesine hoş geldin.");
+                document.getElementById('isim').value = '';
+                document.getElementById('telefon').value = '';
+            }
+        }
+    </script>
+</body>
+</html>

@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <title>LQM - Yönetim Paneli</title>
+    <style>
+        body { font-family: sans-serif; background: #f4f4f9; padding: 20px; }
+        .container { max-width: 800px; margin: auto; background: white; padding: 20px; border-radius: 10px; box-shadow: 0 4px 10px rgba(0,0,0,0.1); }
+        h1 { color: #333; border-bottom: 2px solid #d81b60; padding-bottom: 10px; }
+        /* F-Pattern Düzeni için tablo yapısı */
+        table { width: 100%; border-collapse: collapse; margin-top: 20px; }
+        th, td { padding: 12px; text-align: left; border-bottom: 1px solid #ddd; }
+        th { background-color: #f8f9fa; color: #333; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>LQM Kozmetik - Müşteri Adayları (Leads)</h1>
+        <table id="lead-table">
+            <thead>
+                <tr>
+                    <th>Tarih</th>
+                    <th>İsim</th>
+                    <th>Telefon</th>
+                </tr>
+            </thead>
+            <tbody id="lead-body">
+                <!-- Veriler buraya gelecek -->
+            </tbody>
+        </table>
+    </div>
+
+    <script>
+        // API'den leadleri çekip tabloya (repeater) doldurma
+        async function leadleriGetir() {
+            const response = await fetch('/api/leads');
+            const data = await response.json();
+            
+            if(data.basari) {
+                const tbody = document.getElementById('lead-body');
+                data.leads.forEach(lead => {
+                    tbody.innerHTML += `
+                        <tr>
+                            <td>${lead.tarih}</td>
+                            <td><b>${lead.isim}</b></td>
+                            <td>${lead.telefon}</td>
+                        </tr>
+                    `;
+                });
+            }
+        }
+        // Sayfa yüklenince çalıştır
+        window.onload = leadleriGetir;
+    </script>
+</body>
+</html>
